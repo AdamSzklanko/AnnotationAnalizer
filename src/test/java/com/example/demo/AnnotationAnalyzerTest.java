@@ -36,6 +36,17 @@ class AnnotationAnalyzerTest {
             //then
             assertFalse(parse.isEmpty());
         }
+
+        @Test
+        @DisplayName("Skips undeclared fields gracefully")
+        void parseCanHandleUndeclaredFields() {
+
+            //when
+            Map<String, String> parse = AnnotationAnalyzer.parse(ClassWithNoDeclaredField.class);
+
+            //then
+            assertTrue(parse.isEmpty());
+        }
     }
 
     @Nested
