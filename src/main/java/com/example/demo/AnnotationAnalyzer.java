@@ -10,9 +10,6 @@ import java.util.Map;
 
 public class AnnotationAnalyzer {
 
-    public static void main(String[] args) {
-    }
-
     /**
      * @param tClass class to be parsed
      * @return path to column name
