@@ -11,7 +11,6 @@ import java.util.Map;
 public class AnnotationAnalyzer {
 
     public static void main(String[] args) {
-        parse(User.class);
     }
 
     /**
