@@ -104,7 +104,7 @@ public class AnnotationAnalyzer {
     }
 
     public static boolean doesObjectContainField(Field field, String fieldName) {
-        return Arrays.stream(field.getType().getFields())
+        return Arrays.stream(field.getType().getDeclaredFields())
                 .anyMatch(f -> f.getName().equals(fieldName));
     }
 }
