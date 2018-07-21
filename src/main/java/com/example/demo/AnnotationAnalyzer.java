@@ -5,10 +5,7 @@ import javax.persistence.AttributeOverrides;
 import javax.persistence.Column;
 import javax.persistence.Embedded;
 import java.lang.reflect.Field;
-import java.util.AbstractMap;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -24,29 +21,16 @@ public class AnnotationAnalyzer {
      * @return path to column name
      */
     public static Map<String, String> parse(Class tClass) {
-        Map<String, String> map = new HashMap<String, String>();
-        for (Field field : tClass.getDeclaredFields()) {
-            String name = field.getName();
-            if (field.isAnnotationPresent(Column.class)) {
-                String annotationName = field.getAnnotation(Column.class).name();
-                if (annotationName.isEmpty()) {
-                    map.put(field.getName(), field.getName());
-                } else {
-                    map.put(name, annotationName);
-                }
-            } else if (field.isAnnotationPresent(Embedded.class)) {
-                for (AttributeOverride attributeOverride : field.getAnnotation(AttributeOverrides.class).value()) {
-                    try {
-                        if (field.getType().getDeclaredField(attributeOverride.name()).getType().isEnum()) {
-                            map.put(field.getName() + "." + attributeOverride.name() + ".id", attributeOverride.column().name());
-                        } else {
-                            map.put(field.getName() + "." + attributeOverride.name(), attributeOverride.column().name());
-                        }
-                    } catch (NoSuchFieldException e) {
-                        //friendly exception skip this field
-                    }
-                }
 
+        Set<AnnotationMappingExtractorStrategy> annotationMappingExtractorStrategies = Set.of(new ColumnExtractorStrategy()
+                , new EmbeddedExtractorStrategy());
+
+        Map<String, String> map = new HashMap<>();
+        for (Field field : tClass.getDeclaredFields()) {
+            for (AnnotationMappingExtractorStrategy extractorStrategy : annotationMappingExtractorStrategies) {
+                if (extractorStrategy.isApplicable().test(field)) {
+                    map.putAll(extractorStrategy.extract(field));
+                }
             }
         }
         return map;
@@ -73,7 +57,7 @@ public class AnnotationAnalyzer {
     public static AbstractMap.SimpleEntry<String, String> parseColumn(Field field) {
         String annotationName = field.getAnnotation(Column.class).name();
         String key = annotationName.isEmpty() ? field.getName() : annotationName;
-        return new AbstractMap.SimpleEntry<>(key, field.getName());
+        return new AbstractMap.SimpleEntry<>(field.getName(), key);
     }
 
     public static AbstractMap.SimpleEntry<String, String> parseAttributeOverride(Field field, AttributeOverride attributeOverride) {

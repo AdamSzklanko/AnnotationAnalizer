@@ -107,7 +107,7 @@ class AnnotationAnalyzerTest {
         @MethodSource("com.example.demo.AnnotationAnalyzerTest#correctMappingForUser")
         void testWithMultiArgMethodSource(String key, String value) {
             //when
-            Map<String, String> parse = AnnotationAnalyzer.parse(User.class);
+            Map<String, String> parse = AnnotationAnalyzer.parser(User.class);
 
             //then
             assertTrue(
