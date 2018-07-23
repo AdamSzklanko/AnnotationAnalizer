@@ -10,8 +10,12 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toMap;
+import static java.util.stream.Collectors.toSet;
 
 public class AnnotationAnalyzer {
+
+    private static Set<AnnotationMappingExtractorStrategy> MAPPING_EXTRACTOR_STRATEGIES = Set.of(new ColumnExtractorStrategy()
+            , new EmbeddedExtractorStrategy());
 
     private AnnotationAnalyzer() {
     }
@@ -21,19 +25,16 @@ public class AnnotationAnalyzer {
      * @return path to column name
      */
     public static Map<String, String> parse(Class tClass) {
-
-        Set<AnnotationMappingExtractorStrategy> annotationMappingExtractorStrategies = Set.of(new ColumnExtractorStrategy()
-                , new EmbeddedExtractorStrategy());
-
-        Map<String, String> map = new HashMap<>();
-        for (Field field : tClass.getDeclaredFields()) {
-            for (AnnotationMappingExtractorStrategy extractorStrategy : annotationMappingExtractorStrategies) {
-                if (extractorStrategy.isApplicable().test(field)) {
-                    map.putAll(extractorStrategy.extract(field));
-                }
-            }
-        }
-        return map;
+        return MAPPING_EXTRACTOR_STRATEGIES
+                .stream()
+                .map(annotationMappingExtractorStrategy ->
+                        Arrays.stream(tClass.getDeclaredFields())
+                                .filter(annotationMappingExtractorStrategy.isApplicable())
+                                .map(annotationMappingExtractorStrategy::extract)
+                                .flatMap(stringStringMap -> stringStringMap.entrySet().stream())
+                                .collect(toSet()))
+                .flatMap(Collection::stream)
+                .collect(toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
     /**

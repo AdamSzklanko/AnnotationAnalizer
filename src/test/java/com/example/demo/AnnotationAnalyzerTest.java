@@ -50,6 +50,23 @@ class AnnotationAnalyzerTest {
             //then
             assertTrue(parse.isEmpty());
         }
+
+        @ParameterizedTest
+        @MethodSource("com.example.demo.AnnotationAnalyzerTest#correctMappingForUser")
+        void testWithMultiArgMethodSource(String key, String value) {
+            //when
+            Map<String, String> parse = AnnotationAnalyzer.parse(User.class);
+
+            //then
+            assertTrue(
+                    parse.containsKey(key),
+                    () -> String.format("The map doesn't contain the key: %s", key)
+            );
+            assertEquals(
+                    parse.get(key), value,
+                    () -> String.format("Should key: %s equal value: %s", key, value)
+            );
+        }
     }
 
     static Stream<Arguments> correctMappingForUser() {

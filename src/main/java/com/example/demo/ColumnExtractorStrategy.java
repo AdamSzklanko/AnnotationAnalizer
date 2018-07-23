@@ -15,6 +15,6 @@ public class ColumnExtractorStrategy implements AnnotationMappingExtractorStrate
     public Map<String, String> extract(Field field) {
         String annotationName = field.getAnnotation(Column.class).name();
         String key = annotationName.isEmpty() ? field.getName() : annotationName;
-        return Map.of(key, field.getName());
+        return Map.of(field.getName(), key);
     }
 }
